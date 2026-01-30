@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert, Pressable, ScrollView
 import { useSelector } from 'react-redux';
 import { insertTurn } from '../database/sqlite';
 
+
 export default function NewTurnScreen() {
   const patients = useSelector(state => state.patients);
 

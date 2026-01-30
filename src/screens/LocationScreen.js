@@ -27,5 +27,6 @@ export default function LocationScreen() {
         <Text>Cargando ubicación...</Text>
       )}
     </View>
+    
   );
 }

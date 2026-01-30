@@ -7,6 +7,9 @@ import { setTurns } from '../store/turnsSlice';
 import { getPatients, insertPatient, deletePatient, deleteTurnsByPatient, getTurns} from '../database/sqlite';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase/config';
+
 
 export default function PatientsScreen() {
   const dispatch = useDispatch();
@@ -71,6 +74,8 @@ useFocusEffect(
   };
 
   return (
+
+    
     <View style={styles.container}>
       <Text style={styles.title}>Pacientes</Text>
       
@@ -80,6 +85,7 @@ useFocusEffect(
         style={styles.input}
         value={name}
         onChangeText={setName}
+        borderWidth={1}
       />
 
       <TextInput
@@ -87,6 +93,7 @@ useFocusEffect(
         style={styles.input}
         value={lastname}
         onChangeText={setLastname}
+        borderWidth={1}
       />
 
       <TextInput
@@ -95,9 +102,12 @@ useFocusEffect(
         value={dni}
         onChangeText={setDni}
         keyboardType="numeric"
+        borderWidth={1}
       />
 
       <Button title="Agregar paciente" color="green" onPress={handleAdd} />
+      <Button
+  title="Cerrar sesión" color="red"  onPress={() => signOut(auth)} />
 
       <FlatList
         data={patients}
@@ -113,14 +123,19 @@ useFocusEffect(
   );
 }
 
+
 const styles = StyleSheet.create({
   container: { flex:1, padding:20 },
   title: { fontSize:22, fontWeight:'bold', marginBottom:10 },
   input: { borderWidth:1, padding:10, marginBottom:10 },
-  item: { 
-    flexDirection:'row', 
-    justifyContent:'space-between', 
-    alignItems:'center',
-    marginVertical:5 
-  }
+  item: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  borderWidth: 10,
+  borderColor: '#918282',
+  padding: 10,
+  marginBottom: 10,
+  borderRadius: 5
+}
+
 });

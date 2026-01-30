@@ -1,1 +1,3 @@
 App creada para agenda personal de psicologa, para tener los lugares que trabaja en la navegacion (Privado-Hospital). En la misma se permite la carga de pacientes y asignarles turnos. Proximamente la app tendra un apartado de legajos para los pacientes, mostrando avances, si toma o no alguna medicacion, y sus datos personales.
+
+La pantalla de ubicacion, mostrara (momentaneamente) las coordenadas en las que se encuentra al momento de iniciar la app. 
