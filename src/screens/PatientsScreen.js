@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+// src/screens/PatientsScreen.js
+import React, { useState, useEffect } from 'react'; 
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPatients } from '../store/patientsSlice';
-import { getPatients, insertPatient, deletePatient } from '../database/sqlite';
+import { setTurns } from '../store/turnsSlice';
+import { getPatients, insertPatient, deletePatient, deleteTurnsByPatient, getTurns} from '../database/sqlite';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 export default function PatientsScreen() {
   const dispatch = useDispatch();
@@ -12,43 +16,88 @@ export default function PatientsScreen() {
   const [lastname, setLastname] = useState('');
   const [dni, setDni] = useState('');
 
-  const loadPatients = async () => {
-    const data = await getPatients();
+  const loadPatients = () => {
+    const data = getPatients();
     dispatch(setPatients(data));
   };
 
-  useEffect(() => {
-    loadPatients();
-  }, []);
+  const loadTurns = () => {
+    const data = getTurns();
+    dispatch(setTurns(data));
+  };
 
-  const handleAdd = async () => {
+useFocusEffect(
+  React.useCallback(() => {
+    loadPatients();
+    loadTurns();
+  }, [])
+);
+
+  const handleAdd = () => {
     if (!name || !lastname || !dni) {
       Alert.alert('Error', 'Complete todos los campos');
       return;
     }
 
-    await insertPatient({ name, lastname, dni });
-    await loadPatients();
+    const newPatient = { name, lastname, dni };
+    insertPatient(newPatient);
+
+    loadPatients();
 
     setName('');
     setLastname('');
     setDni('');
   };
 
-  const handleDelete = async (id) => {
-    await deletePatient(id);
-    await loadPatients();
+  const handleDelete = (id) => {
+    Alert.alert(
+      'Eliminar paciente',
+      'Se eliminará también todos sus turnos. ¿Continuar?',
+      [
+        { text: 'Cancelar' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: () => {
+            deleteTurnsByPatient(id);
+            deletePatient(id);
+
+            loadPatients();
+            loadTurns(); // 🔥 actualiza agenda en vivo
+          }
+        }
+      ]
+    );
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Pacientes</Text>
+      
 
-      <TextInput placeholder="Nombre" style={styles.input} value={name} onChangeText={setName} />
-      <TextInput placeholder="Apellido" style={styles.input} value={lastname} onChangeText={setLastname} />
-      <TextInput placeholder="DNI" style={styles.input} value={dni} onChangeText={setDni} keyboardType="numeric" />
+      <TextInput
+        placeholder="Nombre"
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+      />
 
-      <Button title="Agregar paciente" onPress={handleAdd} />
+      <TextInput
+        placeholder="Apellido"
+        style={styles.input}
+        value={lastname}
+        onChangeText={setLastname}
+      />
+
+      <TextInput
+        placeholder="DNI"
+        style={styles.input}
+        value={dni}
+        onChangeText={setDni}
+        keyboardType="numeric"
+      />
+
+      <Button title="Agregar paciente" color="green" onPress={handleAdd} />
 
       <FlatList
         data={patients}
@@ -56,7 +105,7 @@ export default function PatientsScreen() {
         renderItem={({ item }) => (
           <View style={styles.item}>
             <Text>{item.lastname}, {item.name} - {item.dni}</Text>
-            <Button title="X" onPress={() => handleDelete(item.id)} />
+            <Button title="X" color="red" onPress={() => handleDelete(item.id)} />
           </View>
         )}
       />
@@ -68,5 +117,10 @@ const styles = StyleSheet.create({
   container: { flex:1, padding:20 },
   title: { fontSize:22, fontWeight:'bold', marginBottom:10 },
   input: { borderWidth:1, padding:10, marginBottom:10 },
-  item: { flexDirection:'row', justifyContent:'space-between', marginVertical:5 }
+  item: { 
+    flexDirection:'row', 
+    justifyContent:'space-between', 
+    alignItems:'center',
+    marginVertical:5 
+  }
 });

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, Pressable } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { addTurn } from '../store/turnsSlice';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Pressable, ScrollView } from 'react-native';
+import { useSelector } from 'react-redux';
 import { insertTurn } from '../database/sqlite';
 
 export default function NewTurnScreen() {
-  const dispatch = useDispatch();
   const patients = useSelector(state => state.patients);
 
   const [patientId, setPatientId] = useState(null);
@@ -25,76 +23,79 @@ export default function NewTurnScreen() {
 
   const selectedPatient = patients.find(p => p.id === patientId);
 
-  const saveTurn = async () => {
-    if (!patientId || !hour) {
-      Alert.alert('Error', 'Complete todos los campos');
-      return;
-    }
+  const saveTurn = () => {
+  if (!patientId || !hour) {
+    Alert.alert('Error', 'Complete todos los campos');
+    return;
+  }
 
-    const newTurn = {
-      patientId,
-      day,
-      hour,
-      place
-    };
+  insertTurn({
+    patientId,
+    day,
+    hour,
+    place
+  });
 
-    try {
-      
-      const id = await insertTurn(newTurn);
+  Alert.alert('Turno guardado ');
+  setHour('');
+};
 
-      
-      dispatch(addTurn({ id, ...newTurn }));
-
-      Alert.alert('Turno guardado');
-      setHour('');
-    } catch (err) {
-      console.log(err);
-      Alert.alert('Error al guardar');
-    }
-  };
 
   if (patients.length === 0) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Nuevo Turno</Text>
-        <Text>No hay pacientes cargados.</Text>
+        <Text>No hay pacientes cargados</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Nuevo Turno</Text>
 
-      <Text>Paciente</Text>
+      {/* PACIENTE */}
+      <Text style={styles.label}>Paciente</Text>
       <Pressable style={styles.select} onPress={() => setShowPatients(!showPatients)}>
-        <Text>{selectedPatient?.lastname}, {selectedPatient?.name}</Text>
+        <Text>
+          {selectedPatient?.lastname}, {selectedPatient?.name}
+        </Text>
       </Pressable>
 
       {showPatients && patients.map(p => (
-        <Pressable key={p.id} style={styles.option} onPress={() => {
-          setPatientId(p.id);
-          setShowPatients(false);
-        }}>
+        <Pressable
+          key={p.id}
+          style={styles.option}
+          onPress={() => {
+            setPatientId(p.id);
+            setShowPatients(false);
+          }}
+        >
           <Text>{p.lastname}, {p.name}</Text>
         </Pressable>
       ))}
 
-      <Text>Día</Text>
+      {/* DIA */}
+      <Text style={styles.label}>Día</Text>
       <Pressable style={styles.select} onPress={() => setShowDays(!showDays)}>
         <Text>{day}</Text>
       </Pressable>
 
       {showDays && ['Lunes','Martes','Miércoles','Jueves','Viernes'].map(d => (
-        <Pressable key={d} style={styles.option} onPress={() => {
-          setDay(d);
-          setShowDays(false);
-        }}>
+        <Pressable
+          key={d}
+          style={styles.option}
+          onPress={() => {
+            setDay(d);
+            setShowDays(false);
+          }}
+        >
           <Text>{d}</Text>
         </Pressable>
       ))}
 
-      <Text>Hora</Text>
+      {/* HORA */}
+      <Text style={styles.label}>Hora</Text>
       <TextInput
         style={styles.input}
         placeholder="Ej: 14:30"
@@ -102,29 +103,54 @@ export default function NewTurnScreen() {
         onChangeText={setHour}
       />
 
-      <Text>Sede</Text>
+      {/* SEDE */}
+      <Text style={styles.label}>Sede</Text>
       <Pressable style={styles.select} onPress={() => setShowPlaces(!showPlaces)}>
         <Text>{place}</Text>
       </Pressable>
 
       {showPlaces && ['Hospital','Privado'].map(s => (
-        <Pressable key={s} style={styles.option} onPress={() => {
-          setPlace(s);
-          setShowPlaces(false);
-        }}>
+        <Pressable
+          key={s}
+          style={styles.option}
+          onPress={() => {
+            setPlace(s);
+            setShowPlaces(false);
+          }}
+        >
           <Text>{s}</Text>
         </Pressable>
       ))}
 
       <Button title="Guardar turno" onPress={saveTurn} />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
-  input: { borderWidth: 1, padding: 10, marginBottom: 10 },
-  select: { borderWidth: 1, padding: 10, marginBottom: 5, backgroundColor: '#eee' },
-  option: { padding: 10, borderWidth: 1, marginBottom: 5 }
+  title: { fontSize: 22, fontWeight: 'bold', marginBottom: 15 },
+  label: { marginTop: 10, fontWeight: 'bold' },
+  input: {
+    borderWidth: 1,
+    borderColor: '#0f0f0f',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10
+  },
+  select: {
+    borderWidth: 1,
+    borderColor: '#080808',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 5,
+    backgroundColor: '#aa9c9c'
+  },
+  option: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginBottom: 5,
+    backgroundColor: '#c4bdbd'
+  }
 });

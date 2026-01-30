@@ -1,3 +1,4 @@
+// src/database/sqlite.js
 import * as SQLite from 'expo-sqlite';
 
 export const db = SQLite.openDatabaseSync('agenda.db');
@@ -25,32 +26,40 @@ export const initDB = () => {
   console.log('SQLite listo');
 };
 
+/* ---------- PATIENTS ---------- */
 
-export const getPatients = async () => {
-  const result = await db.getAllAsync('SELECT * FROM patients;');
-  return result;
+export const getPatients = () => {
+  return db.getAllSync('SELECT * FROM patients');
 };
 
-export const insertPatient = async ({ name, lastname, dni }) => {
-  await db.runAsync(
+export const insertPatient = ({ name, lastname, dni }) => {
+  db.runSync(
     'INSERT INTO patients (name, lastname, dni) VALUES (?,?,?)',
     [name, lastname, dni]
   );
 };
 
-export const deletePatient = async (id) => {
-  await db.runAsync('DELETE FROM patients WHERE id = ?', [id]);
+export const deletePatient = (id) => {
+  db.runSync('DELETE FROM patients WHERE id = ?', [id]);
 };
 
+/* ---------- TURNS ---------- */
 
-export const getTurns = async () => {
-  const result = await db.getAllAsync('SELECT * FROM turns;');
-  return result;
+export const getTurns = () => {
+  return db.getAllSync('SELECT * FROM turns');
 };
 
-export const insertTurn = async ({ patientId, day, hour, place }) => {
-  await db.runAsync(
+export const insertTurn = ({ patientId, day, hour, place }) => {
+  db.runSync(
     'INSERT INTO turns (patientId, day, hour, place) VALUES (?,?,?,?)',
     [patientId, day, hour, place]
   );
+};
+
+export const deleteTurn = (id) => {
+  db.runSync('DELETE FROM turns WHERE id = ?', [id]);
+};
+
+export const deleteTurnsByPatient = (patientId) => {
+  db.runSync('DELETE FROM turns WHERE patientId = ?', [patientId]);
 };
